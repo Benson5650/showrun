@@ -3,26 +3,31 @@ name: Deploy Web.html
 on:
   push:
     branches:
-      - main
+      - main  # 當推送到 main 分支時觸發部署
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. 檢查出程式碼
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - name: Setup Pages
-        uses: actions/setup-pages@v2
-
+      # 2. 準備部署目錄
       - name: Copy Web.html to root
-        run: cp html/Web.html $GITHUB_WORKSPACE
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/gh-pages
+          cp html/Web.html $GITHUB_WORKSPACE/gh-pages
 
+      # 3. 部署到 gh-pages 分支
       - name: Deploy to GitHub Pages
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add Web.html
+          git init
+          git add .
           git commit -m 'Deploy Web.html'
-          git push origin HEAD:gh-pages
+          git branch -M gh-pages
+          git remote add origin https://github.com/${{ github.repository }}
+          git push --force origin gh-pages
