@@ -2,35 +2,32 @@ name: Deploy Web.html
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Prepare artifact
+        run: |
+          mkdir -p public
+          cp html/Web.html public/
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: ./public
+
   deploy:
     runs-on: ubuntu-latest
-
+    needs: build
+    environment:
+      name: github-pages
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Remove existing .git
-        run: rm -rf .git
-
-      - name: Copy Web.html to gh-pages folder
-        run: |
-          mkdir -p gh-pages
-          cp html/Web.html gh-pages/
-
-      - name: Deploy to GitHub Pages
-        run: |
-          git init
-          git config user.name 'github-actions[bot]'
-          git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add gh-pages/Web.html
-          git commit -m 'Deploy Web.html'
-          git branch -M gh-pages
-          git remote add origin https://github.com/${{ github.repository }}
-          git push --force origin gh-pages
+      - uses: actions/deploy-pages@v2
