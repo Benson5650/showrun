@@ -3,36 +3,34 @@ name: Deploy Web.html
 on:
   push:
     branches:
-      - main  # 當推送到 main 分支時觸發部署
+      - main
 
 permissions:
-  contents: write  # 允許對 Repository 的內容進行更改
+  contents: write
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. 檢查出程式碼
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2. 準備部署目錄
-      - name: Prepare gh-pages directory
+      - name: Remove existing .git
+        run: rm -rf .git
+
+      - name: Copy Web.html to gh-pages folder
         run: |
           mkdir -p gh-pages
           cp html/Web.html gh-pages/
 
-      # 3. 初始化 Git 並推送到 gh-pages
       - name: Deploy to GitHub Pages
         run: |
-          cd gh-pages
           git init
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .
-          git commit -m "Deploy Web.html"
-          # 設置或更新遠端 URL
-          git remote set-url origin https://github.com/${{ github.repository }} || git remote add origin https://github.com/${{ github.repository }}
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add gh-pages/Web.html
+          git commit -m 'Deploy Web.html'
           git branch -M gh-pages
+          git remote add origin https://github.com/${{ github.repository }}
           git push --force origin gh-pages
