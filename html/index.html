@@ -70,8 +70,15 @@
             cursor: pointer; /* 新增:游標變成可點擊狀態 */
         }
         td:hover {
-            background-color: #f7f7f7;
-            transition: background-color 0.3s;
+            background-color: #f0f0f0; /* 一般的 hover 效果 */
+        }
+        
+        td.highlight:hover {
+            background-color:rgb(252, 245, 116); /* highlight 的 hover 效果 */
+        }
+        
+        td.chosen:hover {
+            background-color:rgb(138, 236, 192); /* chosen 的 hover 效果 */
         }
         .highlight {
             background-color: #fffa90;
