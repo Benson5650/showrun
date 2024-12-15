@@ -29,5 +29,5 @@ jobs:
           git add .
           git commit -m 'Deploy Web.html'
           git branch -M gh-pages
-          git remote add origin https://github.com/${{ github.repository }}
+          git remote set-url origin https://github.com/${{ github.repository }} || git remote add origin https://github.com/${{ github.repository }}
           git push --force origin gh-pages
