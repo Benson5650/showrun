@@ -5,6 +5,9 @@ on:
     branches:
       - main  # 當推送到 main 分支時觸發部署
 
+permissions:
+  contents: write  # 允許對 repository 的內容進行更改
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -29,5 +32,5 @@ jobs:
           git add .
           git commit -m 'Deploy Web.html'
           git branch -M gh-pages
-          git remote set-url origin https://github.com/${{ github.repository }} || git remote add origin https://github.com/${{ github.repository }}
+          git remote add origin https://github.com/${{ github.repository }}
           git push --force origin gh-pages
