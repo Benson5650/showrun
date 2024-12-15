@@ -1,0 +1,499 @@
+<style>
+        /* 將所有的樣式都包在 #seating-chart-container 下 */
+        #seating-chart-container {
+            font-family: "Microsoft JhengHei", Arial, sans-serif;
+            margin: 20px auto;
+            background-color: #fafafa;
+            max-width: 800px;
+            line-height: 1.5;
+        }
+
+        #seating-chart-container h1, 
+        #seating-chart-container h2 {
+            color: #333;
+            margin-bottom: 0.5em;
+            text-align: center;
+        }
+
+        #seating-chart-container h1 {
+            margin-top: 0;
+        }
+
+        #seating-chart-container label {
+            font-weight: bold;
+        }
+
+        #seating-chart-container select, 
+        #seating-chart-container input[type="number"], 
+        #seating-chart-container input[type="text"] {
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        #seating-chart-container select:focus, 
+        #seating-chart-container input[type="number"]:focus, 
+        #seating-chart-container input[type="text"]:focus {
+            outline: none;
+            border-color: #28a745;
+            box-shadow: 0 0 5px rgba(40,167,69,0.2);
+        }
+
+        #seating-chart-container table {
+            border-collapse: collapse;
+            margin: 20px auto;
+            width: 60%;
+            background-color: #fff;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        #seating-chart-container td {
+            border: 1px solid #ddd;
+            padding: 15px;
+            text-align: center;
+            font-size: 1rem;
+            position: relative;
+            cursor: pointer; 
+        }
+
+        #seating-chart-container td:hover {
+            background-color: #f7f7f7;
+            transition: background-color 0.3s;
+        }
+
+        #seating-chart-container .highlight {
+            background-color: #fffa90;
+        }
+
+        #seating-chart-container .chosen {
+            background-color: #aaf0d1;
+        }
+
+        #seating-chart-container .form-group {
+            margin-bottom: 15px;
+        }
+
+        #seating-chart-container .container {
+            max-width: 33%;
+            margin: 0 auto;
+        }
+
+        #seating-chart-container #methods, 
+        #seating-chart-container #method-details {
+            margin: 20px 0;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        #seating-chart-container #method-select {
+            font-size: 1rem;
+        }
+
+        #seating-chart-container hr {
+            margin: 30px 0;
+        }
+
+        #seating-chart-container .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        #seating-chart-container .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 300px;
+            text-align: center;
+        }
+
+        #seating-chart-container .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        #seating-chart-container .close-button:hover,
+        #seating-chart-container .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            #seating-chart-container {
+                margin: 10px;
+            }
+            #seating-chart-container button {
+                width: 100%;
+            }
+            #seating-chart-container table {
+                width: 100%;
+            }
+            #seating-chart-container .container {
+                max-width: 100%;
+            }
+            #seating-chart-container .input-container {
+                display: block;
+            }
+        }
+
+        /* 新增特有 class 給輸入框和按鈕防止外部衝突 */
+        #seating-chart-container .sc-input {
+            width: 100%;
+        }
+
+        #seating-chart-container .sc-button {
+            margin-top: 10px;
+            width: 100%;
+        }
+
+    </style>
+
+<div id="seating-chart-container">
+    <div id="custom-alert" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <p>你被選到了!!!</p>
+        </div>
+    </div>
+    <div class="form-group" id="method-selection">
+        <label for="method-select">選擇方法:</label>
+            <select id="method-select" class="sc-input">
+                <option value="小十字">小十字</option>
+                <option value="大十字">大十字</option>
+                <option value="小叉叉">小叉叉</option>
+                <option value="大叉叉">大叉叉</option>
+                <option value="九宮格">九宮格</option>
+                <option value="Σ">Σ</option>
+                <option value="麥當勞">麥當勞</option>
+                <option value="積分">積分</option>
+                <option value="微分">微分</option>
+                <option value="肯德基">肯德基</option>
+                <option value="橫排">橫排</option>
+                <option value="直列">直列</option>
+                <option value="π">π</option>
+                <option value="otamatone">otamatone</option>
+            </select>
+    </div>
+
+    <div id="seating-chart"></div>
+
+    <div class="form-group">
+        <div class="input-container">
+            <input type="number" id="user-number" class="sc-input" placeholder="請輸入你的座號">
+            <input type="number" id="seat-number" class="sc-input" placeholder="請輸入中籤座號或點擊座位表">
+            <button id="apply-method-button" class="sc-button">確認</button>
+        </div>
+    </div>
+    <hr>
+    <h2>新增方法</h2>
+    <div class="form-group">
+        <div class="input-container">
+            <label><input type="checkbox" id="wrap-around"> 穿牆
+            <input type="text" id="method-name" class="sc-input" placeholder="請輸入方法名稱">
+            <input type="text" id="directions" class="sc-input" placeholder="請輸入方向 (例如: [1,0],[-1,0])">
+            </label>
+        </div>
+        <button id="add-method-button" class="sc-button">新增方法</button>
+    </div>
+    <hr>
+    <h2>更改座位表</h2>
+    <div class="form-group">
+        <div class="input-container">
+            <input type="text" id="new-seatingchart" class="sc-input" placeholder="請輸入座位表(以空格區隔座位，逗號換行)">
+        </div>
+        <button id="update-seatingchart-button" class="sc-button">更新座位表</button>
+    </div>
+</div>
+
+<script>
+(function() {
+    let seatingChart = [
+        [1, 2, 3, 4, 5],
+        [6, 7, 8, 9, 10],
+        [11, 12, 13, 14, 15],
+        [16, 17, 18, 19, 20],
+        [21, 22, 23, 24, 25],
+        [26, 27, 28, 29, 30]
+    ];
+
+    const methods = {
+        "小十字": {
+            "wrap_around": true,
+            "directions": [[1, 0], [-1, 0], [0, 1], [0, -1]]
+        },
+        "大十字": {
+            "wrap_around": false,
+            "directions": [[1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [-1, 0], [-2, 0], [-3, 0], [-4, 0], [-5, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, -1], [0, -2], [0, -3], [0, -4], [0, -5]]
+        },
+        "大叉叉": {
+            "wrap_around": false,
+            "directions": [[1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [-1, -1], [-2, -2], [-3, -3], [-4, -4], [-5, -5], [1, -1], [2, -2], [3, -3], [4, -4], [5, -5], [-1, 1], [-2, 2], [-3, 3], [-4, 4], [-5, 5]]
+        },
+        "小叉叉": {
+            "wrap_around": true,
+            "directions": [[1, 1], [-1, -1], [1, -1], [-1, 1]]
+        },
+        "九宮格": {
+            "wrap_around": true,
+            "directions": [[1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1]]
+        },
+        "Σ": {
+            "wrap_around": true,
+            "directions": [[-1, 1], [-2, 2], [-1, 2], [0, 2], [1, 2], [2, 2],[-1, -1], [-2, -2], [-1, -2], [0, -2], [1, -2], [2, -2]]
+        },
+        "麥當勞": {
+            "wrap_around": true,
+            "directions": [[1, 1], [2, 2], [2, 1], [2, 0], [2, -1], [2, -2], [-1, 1], [-2, 2], [-2, 1], [-2, 0], [-2, -1], [-2, -2]]
+        },
+        "積分": {
+            "wrap_around": true,
+            "directions": [[0,1],[0,2],[1,2],[0,-1],[0,-2],[-1,-2]]
+        },
+        "微分": {
+            "wrap_around": true,
+            "directions":[[1,1],[2,2]]
+        },
+        "肯德基": {
+            "wrap_around": true,
+            "directions": [[0,1],[0,2],[0,-1],[0,-2],[1,1],[2,2],[1,-1],[2,-2]]
+        },
+        "橫排": {
+            "wrap_around": false,
+            "directions": [[1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [-1, 0], [-2, 0], [-3, 0], [-4, 0], [-5, 0]]
+        },
+        "直列": {
+            "wrap_around": false,
+            "directions": [[0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, -1], [0, -2], [0, -3], [0, -4], [0, -5]]
+        },
+        "π": {
+            "wrap_around": true,
+            "directions": [[1, 0], [2, 0], [-1, 0], [-2, 0],[1,-1],[1,-2],[1,-3],[2,-3],[-1,-1],[-1,-2],[-1,-3]]
+        },
+        "otamatone": {
+            "wrap_around": true,
+            "directions": [[1, 0], [-1, 0], [0, 1], [0, -1],[0,2],[0,3],[1,3]]
+        }
+    };  
+
+    function printSeatingChart(seatingChart) {
+        const container = document.getElementById('seating-chart');
+        container.innerHTML = '';
+        const table = document.createElement('table');
+        seatingChart.forEach((row, rowIndex) => {
+            const tr = document.createElement('tr');
+            row.forEach((num, colIndex) => {
+                const td = document.createElement('td');
+                td.textContent = num;
+                td.addEventListener('click', () => {
+                    document.getElementById('seat-number').value = num;
+                    applySelectedMethod();
+                });
+                tr.appendChild(td);
+            });
+            table.appendChild(tr);
+        });
+        container.appendChild(table);
+    }
+
+    function updateSeatingChart() {
+        const newSeatingChart = document.getElementById('new-seatingchart').value;
+        const newSeatingChartArray = newSeatingChart.split(',').map(row => row.trim().split(' ').map(Number));
+        
+        if (newSeatingChartArray.every(row => row.every(num => !isNaN(num)))) {
+            const flatArray = newSeatingChartArray.flat();
+            const uniqueNumbers = new Set(flatArray);
+            
+            if (flatArray.length !== uniqueNumbers.size) {
+                showModal('座號重複，請檢查輸入的座位表');
+                return;
+            }
+            
+            seatingChart = newSeatingChartArray;
+            printSeatingChart(seatingChart);
+            showModal('座位表已更新');
+            document.getElementById('new-seatingchart').value = '';
+        } else {
+            showModal('請輸入正確的座位表');
+        }
+    }
+
+    function getPosition(seatingChart, r, c, wrapAround) {
+        const rows = seatingChart.length;
+        const cols = seatingChart[0].length;
+        if (wrapAround) {
+            r = (r + rows) % rows;
+            c = (c + cols) % cols;
+            return seatingChart[r][c];
+        } else {
+            if (0 <= r && r < rows && 0 <= c && c < cols) {
+                return seatingChart[r][c];
+            } else {
+                return null;
+            }
+        }
+    }
+
+    function applyMethod(seatingChart, number, methodName, methods) {
+        const pos = findNumber(seatingChart, number);
+        if (!pos) return [];
+        const [row, col] = pos;
+
+        const method = methods[methodName];
+        if (!method) return [];
+
+        const wrapAround = method.wrap_around;
+        const directions = method.directions;
+
+        if (!Array.isArray(directions) || !directions.every(d => Array.isArray(d) && d.length === 2)) {
+            return [];
+        }
+
+        const values = new Set();
+        directions.forEach(direction => {
+            const r = row - direction[1];
+            const c = col + direction[0];
+            const value = getPosition(seatingChart, r, c, wrapAround);
+            if (value !== null) {
+                values.add(value);
+            }
+        });
+
+        return Array.from(values).sort((a, b) => a - b);
+    }
+
+    function visualizeResult(seatingChart, result, seatNumber) {
+        const container = document.getElementById('seating-chart');
+        const table = container.querySelector('table');
+        
+        seatingChart.forEach((row, rowIndex) => {
+            row.forEach((num, colIndex) => {
+                const cell = table.rows[rowIndex].cells[colIndex];
+                cell.classList.remove('highlight', 'chosen');
+            });
+        });
+
+        seatingChart.forEach((row, rowIndex) => {
+            row.forEach((num, colIndex) => {
+                const cell = table.rows[rowIndex].cells[colIndex];
+                if (num === seatNumber) {
+                    cell.classList.add('chosen');
+                } else if (result.includes(num)) {
+                    cell.classList.add('highlight');
+                }
+            });
+        });
+    }
+
+    function findNumber(seatingChart, number) {
+        for (let row = 0; row < seatingChart.length; row++) {
+            for (let col = 0; col < seatingChart[row].length; col++) {
+                if (seatingChart[row][col] === number) {
+                    return [row, col];
+                }
+            }
+        }
+        return null;
+    }
+
+    function applySelectedMethod() {
+        const seatNumber = parseInt(document.getElementById('seat-number').value);
+        const userNumber = parseInt(document.getElementById('user-number').value);
+        const methodName = document.getElementById('method-select').value; 
+        const result = applyMethod(seatingChart, seatNumber, methodName, methods);
+        visualizeResult(seatingChart, result, seatNumber);
+        document.getElementById('seat-number').value = '';
+        if (result.includes(userNumber)) {
+            showModal("你被選中了!!!");
+        }
+    }
+
+    function addNewMethod() {
+        const methodName = document.getElementById('method-name').value;
+        const wrapAround = document.getElementById('wrap-around').checked;
+        const directionsInput = document.getElementById('directions').value;
+        const directions = directionsInput.split('],[').map(d => d.replace('[', '').replace(']', '').split(',').map(Number));
+
+        if (methodName && Array.isArray(directions) && directions.every(d => Array.isArray(d) && d.length === 2)) {
+            methods[methodName] = {
+                wrap_around: wrapAround,
+                directions: directions
+            };
+        
+            updateMethodSelect();
+            showModal('新方法已添加');
+            document.getElementById('method-name').value = '';
+            document.getElementById('wrap-around').checked = false;
+            document.getElementById('directions').value = '';
+        } else {
+            showModal('請輸入有效的方法名稱和方向');
+        }
+    }
+
+    function updateMethodSelect() {
+        const methodSelect = document.getElementById('method-select');
+        methodSelect.innerHTML = '';
+        Object.keys(methods).forEach(method => {
+            const option = document.createElement('option');
+            option.value = method;
+            option.textContent = method;
+            methodSelect.appendChild(option);
+        });
+    }
+
+    function showModal(message) {
+        const modal = document.getElementById('custom-alert');
+        modal.querySelector('p').textContent = message;
+        modal.style.display = 'block';
+    }
+    
+    function closeModal() {
+        const modal = document.getElementById('custom-alert');
+        modal.style.display = 'none';
+    }
+
+    // 初始化顯示
+    printSeatingChart(seatingChart);
+    updateMethodSelect();
+
+    // 綁定事件處理
+    document.getElementById('apply-method-button').addEventListener('click', applySelectedMethod);
+    document.getElementById('add-method-button').addEventListener('click', addNewMethod);
+    document.getElementById('update-seatingchart-button').addEventListener('click', updateSeatingChart);
+
+    // 關閉 modal
+    document.querySelector('#custom-alert .close-button').addEventListener('click', closeModal);
+    document.getElementById('custom-alert').addEventListener('click', closeModal);
+    document.querySelector('#custom-alert .modal-content').addEventListener('click', (e) => e.stopPropagation());
+
+    // 鍵盤事件監聽 (Enter 鍵)
+    document.getElementById('seat-number').addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            applySelectedMethod();
+        }
+    });
+    document.getElementById('directions').addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            addNewMethod();
+        }
+    });
+})();
+</script>
