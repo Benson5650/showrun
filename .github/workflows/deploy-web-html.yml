@@ -9,6 +9,10 @@ permissions:
   pages: write
   id-token: write
 
+concurrency:
+  group: "pages-deploy"
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -16,24 +20,26 @@ jobs:
       # 1. 檢出程式碼
       - uses: actions/checkout@v3
 
-      # 2. 如果有需要執行 npm build 或其他建置流程，在這裡進行
-      #    若只是純靜態檔案，可直接將檔案複製到指定目錄。
-      - name: Prepare artifact
+      # 2. 建置靜態網站（依需求調整建置流程）
+      - name: Build static site
         run: |
           mkdir -p public
           cp html/index.html public/index.html
 
-      # 3. 上傳產物
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
+      # 3. 上傳建置產物供部署工作使用
+      - name: Upload artifact for deployment job
+        uses: actions/upload-pages-artifact@v3
         with:
-          path: ./public
+          path: public
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
     environment:
       name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       # 4. 部署靜態網站到 GitHub Pages
-      - uses: actions/deploy-pages@v2
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
