@@ -25,7 +25,7 @@ jobs:
 
       # 3. 上傳產物
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v3
         with:
           path: ./public
 
