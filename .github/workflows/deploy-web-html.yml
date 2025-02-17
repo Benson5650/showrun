@@ -1,25 +1,24 @@
 name: Deploy GitHub Pages
 
-# 當推送到 main 分支時觸發此 workflow
 on:
   push:
     branches: [ main ]
 
-# 設定所需的權限
+# 必要權限設定
 permissions:
-  contents: read    # 讀取程式碼的權限
-  pages: write      # 部署 GitHub Pages 的寫入權限
-  id-token: write   # 用來驗證部署來源
+  contents: read    # 讀取程式碼權限
+  pages: write      # GitHub Pages 部署權限
+  id-token: write   # 部署驗證權限
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      # 1. 檢出倉庫程式碼
+      # 1. 檢出程式碼
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # 2. 列出倉庫內容（可選，用於除錯）
+      # 2. （可選）列出根目錄內容，幫助除錯
       - name: List repository contents
         run: ls -la
 
@@ -31,14 +30,14 @@ jobs:
           # 列出 public 資料夾內容確認檔案是否存在
           ls -la public
 
-      # 4. 上傳 artifact，並指定 artifact 名稱為 github-pages（deploy 步驟會依此名稱查找 artifact）
+      # 4. 上傳 artifact（使用 input 'name' 指定 artifact 名稱）
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: public
-          artifact_name: github-pages
+          name: github-pages
 
-      # 5. 部署至 GitHub Pages
+      # 5. 部署至 GitHub Pages（預設會尋找名稱為 "github-pages" 的 artifact）
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v3
