@@ -1,43 +1,39 @@
-name: Deploy GitHub Pages
+name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main ]  # 當 main 分支有更新時部署
 
-# 必要權限設定
 permissions:
-  contents: read    # 讀取程式碼權限
-  pages: write      # GitHub Pages 部署權限
-  id-token: write   # 部署驗證權限
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       # 1. 檢出程式碼
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      # 2. （可選）列出根目錄內容，幫助除錯
-      - name: List repository contents
-        run: ls -la
-
-      # 3. 準備部署檔案：建立 public 資料夾並複製 html/index.html
-      - name: Prepare deployment files
+      # 2. 如果有需要執行 npm build 或其他建置流程，在這裡進行
+      #    若只是純靜態檔案，可直接將檔案複製到指定目錄。
+      - name: Prepare artifact
         run: |
           mkdir -p public
-          cp html/index.html public/
-          # 列出 public 資料夾內容確認檔案是否存在
-          ls -la public
+          cp html/index.html public/index.html
 
-      # 4. 上傳 artifact（使用 input 'name' 指定 artifact 名稱）
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+      # 3. 上傳產物
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
         with:
-          path: public
-          name: github-pages
+          path: ./public
 
-      # 5. 部署至 GitHub Pages（預設會尋找名稱為 "github-pages" 的 artifact）
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v3
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: github-pages
+    steps:
+      # 4. 部署靜態網站到 GitHub Pages
+      - uses: actions/deploy-pages@v2
