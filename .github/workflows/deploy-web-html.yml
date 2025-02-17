@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # 1. 檢出程式碼
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # 2. 如果有需要執行 npm build 或其他建置流程，在這裡進行
       #    若只是純靜態檔案，可直接將檔案複製到指定目錄。
