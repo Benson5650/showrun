@@ -55,7 +55,7 @@
         table {
             border-collapse: collapse;
             margin: 20px auto;
-            width: 60%;
+            width: 80%;
             background-color: #fff;
             border-radius: 4px;
             overflow: hidden;
@@ -63,7 +63,8 @@
         }
         td {
             border: 1px solid #ddd;
-            padding: 15px;
+            padding: 25px;
+            font-size: 1.2rem;
             text-align: center;
             font-size: 1rem;
             position: relative;
@@ -240,11 +241,19 @@
     <h2>更改座位表</h2>
     <div class="form-group">
         <div class="input-container">
-            
-            <input type="text" id="new-seatingchart" placeholder="請輸入座位表(以空格區隔座位，逗號換行)" >
-            
+            <input type="number" id="rows" placeholder="請輸入列數" min="1" style="width: 48%;">
+            <input type="number" id="cols" placeholder="請輸入行數" min="1" style="width: 48%;">
+            <button onclick="toggleEditMode()" id="edit-mode-btn" style="margin-top: 10px; width: 100%;">進入編輯模式</button>
         </div>
-        <button onclick="updateSeatingChart()">更新座位表</button>
+        <div class="input-container" style="margin-top: 10px;">
+            <button onclick="createEmptyChart()">建立空白座位表</button>
+            <button onclick="clearSeatingChart()">清空座位表</button>
+        </div>
+        <div class="input-container" style="margin-top: 10px;">
+            <input type="text" id="new-seatingchart" placeholder="請輸入座位表(以空格區隔座位，逗號換行)">
+        </div>
+            <button onclick="updateSeatingChart()">更新座位表</button>
+            <button onclick="exportSeatingChart()">匯出座位表</button>
 
     <script>
         let seatingChart = [
@@ -315,25 +324,124 @@
         }
     };
 
+        let isEditMode = false;
+
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            const btn = document.getElementById('edit-mode-btn');
+            btn.textContent = isEditMode ? '退出編輯模式' : '進入編輯模式';
+            btn.style.backgroundColor = isEditMode ? '#dc3545' : '#28a745';
+            printSeatingChart(seatingChart);
+        }
+
         function printSeatingChart(seatingChart) {
             const container = document.getElementById('seating-chart');
             container.innerHTML = '';
             const table = document.createElement('table');
-            seatingChart.forEach(row => {
+            seatingChart.forEach((row, rowIndex) => {
                 const tr = document.createElement('tr');
-                row.forEach(num => {
+                row.forEach((num, colIndex) => {
                     const td = document.createElement('td');
+                    td.contentEditable = isEditMode;
                     td.textContent = num;
-                    // 新增點擊事件監聽器
-                    td.addEventListener('click', () => {
-                        document.getElementById('seat-number').value = num;
-                        applySelectedMethod();
-                    });
+                    
+                    if (isEditMode) {
+                        // 函數：選取全部文字
+                        const selectAllText = () => {
+                            const selection = window.getSelection();
+                            const range = document.createRange();
+                            range.selectNodeContents(td);
+                            selection.removeAllRanges();
+                            selection.addRange(range);
+                        };
+
+                        // 點擊時選取全部文字
+                        td.addEventListener('click', selectAllText);
+                        
+                        // Tab鍵移入時也選取全部文字
+                        td.addEventListener('focus', selectAllText);
+
+                        // 限制只能輸入數字
+                        td.addEventListener('input', () => {
+                            const value = td.textContent.replace(/\D/g, '');
+                            if (value) {
+                                td.textContent = value;
+                            }
+                        });
+
+                        // 編輯完成時更新座位表
+                        td.addEventListener('blur', () => {
+                            const newValue = parseInt(td.textContent);
+                            if (!isNaN(newValue)) {
+                                seatingChart[rowIndex][colIndex] = newValue;
+                            } else {
+                                td.textContent = num;
+                            }
+                        });
+                    } else {
+                        // 非編輯模式：點擊選擇座位
+                        td.addEventListener('click', () => {
+                            document.getElementById('seat-number').value = num;
+                            applySelectedMethod();
+                        });
+                    }
+
                     tr.appendChild(td);
                 });
                 table.appendChild(tr);
             });
             container.appendChild(table);
+        }
+
+        function createEmptyChart() {
+            const rows = parseInt(document.getElementById('rows').value);
+            const cols = parseInt(document.getElementById('cols').value);
+            
+            if (isNaN(rows) || isNaN(cols) || rows < 1 || cols < 1) {
+                showModal('請輸入有效的列數和行數');
+                return;
+            }
+
+            seatingChart = Array.from({ length: rows }, () => 
+                Array.from({ length: cols }, () => 0)
+            );
+            printSeatingChart(seatingChart);
+            showModal('已建立空白座位表，請編輯座位號碼');
+        }
+
+        function clearSeatingChart() {
+            if (seatingChart.length > 0) {
+                const rows = seatingChart.length;
+                const cols = seatingChart[0].length;
+                seatingChart = Array.from({ length: rows }, () => 
+                    Array.from({ length: cols }, () => 0)
+                );
+                printSeatingChart(seatingChart);
+                showModal('座位表已清空');
+            }
+        }
+
+        function exportSeatingChart() {
+            const exportText = seatingChart
+                .map(row => row.join(' '))
+                .join(',');
+            
+            // 創建一個 blob 物件
+            const blob = new Blob([exportText], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            
+            // 創建一個下載連結
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'seating_chart.txt';
+            
+            // 觸發下載
+            document.body.appendChild(a);
+            a.click();
+            
+            // 清理
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
         }
 
         function updateSeatingChart() {
