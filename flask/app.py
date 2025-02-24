@@ -196,6 +196,23 @@ def handle_seating_charts():
         save_to_drive(service, app.config['SEATING_CHARTS_FILE'], data)
         return jsonify(new_chart), 201
 
+@app.route('/api/seating-charts/<int:chart_id>', methods=['DELETE'])
+@login_required
+def delete_seating_chart(chart_id):
+    service = current_user.get_drive_service()
+    if not service:
+        return jsonify({'error': '無法存取 Google Drive'}), 400
+    
+    data = load_from_drive(service, app.config['SEATING_CHARTS_FILE'])
+    if data is None:
+        return jsonify({'error': '找不到座位表'}), 404
+    
+    # 找到並刪除指定的座位表
+    data = [chart for chart in data if chart['id'] != chart_id]
+    save_to_drive(service, app.config['SEATING_CHARTS_FILE'], data)
+    
+    return jsonify({'message': '座位表已刪除'}), 200
+
 @app.route('/api/methods', methods=['GET', 'POST'])
 @login_required
 def handle_methods():
@@ -221,6 +238,23 @@ def handle_methods():
         
         save_to_drive(service, app.config['METHODS_FILE'], data)
         return jsonify(new_method), 201
+
+@app.route('/api/methods/<int:method_id>', methods=['DELETE'])
+@login_required
+def delete_method(method_id):
+    service = current_user.get_drive_service()
+    if not service:
+        return jsonify({'error': '無法存取 Google Drive'}), 400
+    
+    data = load_from_drive(service, app.config['METHODS_FILE'])
+    if data is None:
+        return jsonify({'error': '找不到方法'}), 404
+    
+    # 找到並刪除指定的方法
+    data = [method for method in data if method['id'] != method_id]
+    save_to_drive(service, app.config['METHODS_FILE'], data)
+    
+    return jsonify({'message': '方法已刪除'}), 200
 
 if __name__ == '__main__':
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'  # 開發環境使用

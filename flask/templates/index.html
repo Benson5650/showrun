@@ -5,6 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Seating Chart</title>
     <style>
+        /* 載入動畫 */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #28a745;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 禁用按鈕樣式 */
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
         body {
             font-family: "Microsoft JhengHei", Arial, sans-serif;
             margin: 20px;
@@ -177,6 +211,10 @@
     </style>
 </head>
 <body>
+    <!-- 載入動畫 -->
+    <div id="loading" class="loading">
+        <div class="loading-spinner"></div>
+    </div>
     <!-- 使用者區域 -->
     <div class="user-section">
         {% if current_user.is_authenticated %}
@@ -620,6 +658,23 @@
             modal.style.display = 'none';
         }
         {% if current_user.is_authenticated %}
+            // 顯示/隱藏載入動畫
+            function showLoading() {
+                document.getElementById('loading').style.display = 'flex';
+            }
+
+            function hideLoading() {
+                document.getElementById('loading').style.display = 'none';
+            }
+
+            // 設定按鈕狀態
+            function setButtonsDisabled(disabled) {
+                const buttons = document.querySelectorAll('button');
+                buttons.forEach(button => {
+                    button.disabled = disabled;
+                });
+            }
+
             async function saveSeatingChart() {
                 const name = document.getElementById('save-name').value;
                 if (!name) {
@@ -627,7 +682,11 @@
                     return;
                 }
 
-                const response = await fetch('/api/seating-charts', {
+                showLoading();
+                setButtonsDisabled(true);
+                
+                try {
+                    const response = await fetch('/api/seating-charts', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -638,17 +697,27 @@
                     })
                 });
 
-                if (response.ok) {
-                    showModal('座位表已儲存');
-                    document.getElementById('save-name').value = '';
-                    loadSavedSeatingCharts();
-                } else {
-                    showModal('儲存失敗');
+                    if (response.ok) {
+                        showModal('座位表已儲存');
+                        document.getElementById('save-name').value = '';
+                        await loadSavedSeatingCharts();
+                    } else {
+                        showModal('儲存失敗');
+                    }
+                } catch (error) {
+                    showModal('操作失敗：' + error.message);
+                } finally {
+                    hideLoading();
+                    setButtonsDisabled(false);
                 }
             }
 
             async function loadSavedSeatingCharts() {
-                const response = await fetch('/api/seating-charts');
+                showLoading();
+                setButtonsDisabled(true);
+
+                try {
+                    const response = await fetch('/api/seating-charts');
                 if (response.ok) {
                     const charts = await response.json();
                     const container = document.getElementById('saved-seating-charts');
@@ -660,10 +729,17 @@
                             <span>${chart.name}</span>
                             <div>
                                 <button onclick='loadSeatingChart(${JSON.stringify(chart.data)})'>載入</button>
+                                <button onclick='deleteSeatingChart(${chart.id})' style="background-color: #dc3545;">刪除</button>
                             </div>
                         `;
                         container.appendChild(div);
                     });
+                }
+            }
+
+                } finally {
+                    hideLoading();
+                    setButtonsDisabled(false);
                 }
             }
 
@@ -675,7 +751,11 @@
                     return;
                 }
 
-                const response = await fetch('/api/methods', {
+                showLoading();
+                setButtonsDisabled(true);
+
+                try {
+                    const response = await fetch('/api/methods', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -686,17 +766,27 @@
                     })
                 });
 
-                if (response.ok) {
-                    showModal('方法已儲存');
-                    document.getElementById('save-method-name').value = '';
-                    loadSavedMethods();
-                } else {
-                    showModal('儲存失敗');
+                    if (response.ok) {
+                        showModal('方法已儲存');
+                        document.getElementById('save-method-name').value = '';
+                        await loadSavedMethods();
+                    } else {
+                        showModal('儲存失敗');
+                    }
+                } catch (error) {
+                    showModal('操作失敗：' + error.message);
+                } finally {
+                    hideLoading();
+                    setButtonsDisabled(false);
                 }
             }
 
             async function loadSavedMethods() {
-                const response = await fetch('/api/methods');
+                showLoading();
+                setButtonsDisabled(true);
+
+                try {
+                    const response = await fetch('/api/methods');
                 if (response.ok) {
                     const savedMethods = await response.json();
                     const container = document.getElementById('saved-methods');
@@ -708,6 +798,7 @@
                             <span>${method.name}</span>
                             <div>
                                 <button onclick='loadMethod("${method.name}", ${JSON.stringify(method.data)})'>載入</button>
+                                <button onclick='deleteMethod(${method.id})' style="background-color: #dc3545;">刪除</button>
                             </div>
                         `;
                         container.appendChild(div);
@@ -726,6 +817,67 @@
                 updateMethodSelect();
                 document.getElementById('method-select').value = name;
                 showModal('方法已載入');
+            }
+
+            // 新增刪除功能
+                } finally {
+                    hideLoading();
+                    setButtonsDisabled(false);
+                }
+            }
+
+            async function deleteSeatingChart(id) {
+                if (!confirm('確定要刪除這個座位表嗎？')) {
+                    return;
+                }
+
+                showLoading();
+                setButtonsDisabled(true);
+
+                try {
+                    const response = await fetch(`/api/seating-charts/${id}`, {
+                    method: 'DELETE'
+                });
+
+                    if (response.ok) {
+                        showModal('座位表已刪除');
+                        await loadSavedSeatingCharts();
+                    } else {
+                        showModal('刪除失敗');
+                    }
+                } catch (error) {
+                    showModal('刪除失敗：' + error.message);
+                } finally {
+                    hideLoading();
+                    setButtonsDisabled(false);
+                }
+            }
+
+            async function deleteMethod(id) {
+                if (!confirm('確定要刪除這個方法嗎？')) {
+                    return;
+                }
+
+                showLoading();
+                setButtonsDisabled(true);
+
+                try {
+                    const response = await fetch(`/api/methods/${id}`, {
+                    method: 'DELETE'
+                });
+
+                    if (response.ok) {
+                        showModal('方法已刪除');
+                        await loadSavedMethods();
+                    } else {
+                        showModal('刪除失敗');
+                    }
+                } catch (error) {
+                    showModal('刪除失敗：' + error.message);
+                } finally {
+                    hideLoading();
+                    setButtonsDisabled(false);
+                }
             }
 
             // 初始載入已儲存的資料
