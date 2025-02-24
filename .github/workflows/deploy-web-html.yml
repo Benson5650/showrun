@@ -24,7 +24,7 @@ jobs:
       - name: Build static site
         run: |
           mkdir -p public
-          cp html/index.html public/index.html
+          cp static_html/index.html public/index.html
 
       # 3. 上傳建置產物供部署工作使用
       - name: Upload artifact for deployment job
