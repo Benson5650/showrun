@@ -65,63 +65,69 @@
         </div>
     </div>
     
-    <div class="form-group" id="method-selection">
-        <label for="method-select">選擇方法:</label>
-            <select id="method-select" class="sc-input">
-                <option value="小十字">小十字</option>
-                <option value="大十字">大十字</option>
-                <option value="小叉叉">小叉叉</option>
-                <option value="大叉叉">大叉叉</option>
-                <option value="九宮格">九宮格</option>
-                <option value="Σ">Σ</option>
-                <option value="麥當勞">麥當勞</option>
-                <option value="積分">積分</option>
-                <option value="微分">微分</option>
-                <option value="肯德基">肯德基</option>
-                <option value="橫排">橫排</option>
-                <option value="直列">直列</option>
-                <option value="π">π</option>
-                <option value="otamatone">otamatone</option>
-            </select>   
-    </div>
+    <div class="layout-container">
+        <div class="seating-section">
+            <div id="seating-chart"></div>
+        </div>
+        
+        <div class="control-section">
+            <div class="form-group" id="method-selection">
+                <label for="method-select">選擇方法:</label>
+                <select id="method-select" class="sc-input">
+                    <option value="小十字">小十字</option>
+                    <option value="大十字">大十字</option>
+                    <option value="小叉叉">小叉叉</option>
+                    <option value="大叉叉">大叉叉</option>
+                    <option value="九宮格">九宮格</option>
+                    <option value="Σ">Σ</option>
+                    <option value="麥當勞">麥當勞</option>
+                    <option value="積分">積分</option>
+                    <option value="微分">微分</option>
+                    <option value="肯德基">肯德基</option>
+                    <option value="橫排">橫排</option>
+                    <option value="直列">直列</option>
+                    <option value="π">π</option>
+                    <option value="otamatone">otamatone</option>
+                </select>   
+            </div>
 
-    <div id="seating-chart"></div>
+            <div class="form-group">
+                <div class="input-container">
+                    <input type="number" id="user-number" placeholder="請輸入你的座號">
+                    <input type="number" id="seat-number" placeholder="請輸入中籤座號或點擊座位表" onkeydown="if(event.key === 'Enter') applySelectedMethod()">
+                    <button onclick="applySelectedMethod()">確認</button>
+                </div>
+            </div>
 
-    <div class="form-group">
-        <div class="input-container">
-            <input type="number" id="user-number" placeholder="請輸入你的座號">
-            <input type="number" id="seat-number" placeholder="請輸入中籤座號或點擊座位表" onkeydown="if(event.key === 'Enter') applySelectedMethod()">
-            <button onclick="applySelectedMethod()">確認</button>
+            <h2>新增方法</h2>
+            <div class="form-group">
+                <div class="input-container">
+                    <label><input type="checkbox" id="wrap-around"> 穿牆
+                    <input type="text" id="method-name" placeholder="請輸入方法名稱" >
+                    <input type="text" id="directions" placeholder="請輸入方向 (例如: [1,0],[-1,0])" onkeydown="if(event.key === 'Enter') addNewMethod()" >
+                    </label>
+                </div>
+                <button onclick="addNewMethod()">新增方法</button>
+            </div>
+            <hr>
+            <h2>更改座位表</h2>
+            <div class="form-group">
+                <div class="input-container">
+                    <input type="number" id="rows" placeholder="請輸入列數" min="1" style="width: 48%;">
+                    <input type="number" id="cols" placeholder="請輸入行數" min="1" style="width: 48%;">
+                    <button onclick="toggleEditMode()" id="edit-mode-btn" style="margin-top: 10px; width: 100%;">進入編輯模式</button>
+                </div>
+                <div class="input-container" style="margin-top: 10px;">
+                    <button onclick="createEmptyChart()">建立空白座位表</button>
+                    <button onclick="clearSeatingChart()">清空座位表</button>
+                </div>
+                <div class="input-container" style="margin-top: 10px;">
+                    <input type="text" id="new-seatingchart" placeholder="請輸入座位表(以空格區隔座位，逗號換行)">
+                </div>
+                <button onclick="updateSeatingChart()">更新座位表</button>
+                <button onclick="exportSeatingChart()">匯出座位表</button>
+            </div>
         </div>
-    </div>
-    <hr>
-    <h2>新增方法</h2>
-    <div class="form-group">
-        <div class="input-container">
-            <label><input type="checkbox" id="wrap-around"> 穿牆
-            <input type="text" id="method-name" placeholder="請輸入方法名稱" >
-            <input type="text" id="directions" placeholder="請輸入方向 (例如: [1,0],[-1,0])" onkeydown="if(event.key === 'Enter') addNewMethod()" >
-            </label>
-        </div>
-        <button onclick="addNewMethod()">新增方法</button>
-    </div>
-    <hr>
-    <h2>更改座位表</h2>
-    <div class="form-group">
-        <div class="input-container">
-            <input type="number" id="rows" placeholder="請輸入列數" min="1" style="width: 48%;">
-            <input type="number" id="cols" placeholder="請輸入行數" min="1" style="width: 48%;">
-            <button onclick="toggleEditMode()" id="edit-mode-btn" style="margin-top: 10px; width: 100%;">進入編輯模式</button>
-        </div>
-        <div class="input-container" style="margin-top: 10px;">
-            <button onclick="createEmptyChart()">建立空白座位表</button>
-            <button onclick="clearSeatingChart()">清空座位表</button>
-        </div>
-        <div class="input-container" style="margin-top: 10px;">
-            <input type="text" id="new-seatingchart" placeholder="請輸入座位表(以空格區隔座位，逗號換行)">
-        </div>
-        <button onclick="updateSeatingChart()">更新座位表</button>
-        <button onclick="exportSeatingChart()">匯出座位表</button>
     </div>
 
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
